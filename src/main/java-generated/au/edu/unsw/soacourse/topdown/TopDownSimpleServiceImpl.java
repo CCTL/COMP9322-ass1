@@ -5,24 +5,32 @@ import javax.jws.WebService;
 @WebService(endpointInterface = "au.edu.unsw.soacourse.topdown.TopDownSimpleService")
 public class TopDownSimpleServiceImpl implements TopDownSimpleService {
   
-        //TODO: create an ObjectFactory
+  ObjectFactory objFactory;
   
-    public ImportMarketDataResponse importMarketData(ImportMarketDataRequest req) {
+  public ImportMarketDataResponse importMarketData(ImportMarketDataRequest req) {
 
-      //TODO: create and set ImportMarketResponse object and return the following as response data
+    ImportMarketDataResponse res = objFactory.createImportMarketDataResponse();
+    
+    StringBuilder sbf = new StringBuilder();
+    sbf.append("Security Code: ").append(req.sec).append("\r\n");
+    sbf.append("Start date: ").append(req.startDate).append("\r\n");
+    sbf.append("End date: ").append(req.endDate).append("\r\n");
+    sbf.append("Data source: ").append(req.dataSource).append("\r\n");
+    
+    res.setReturn(sbf.toString());
+    
+    return res;
+  }
 
-      //  StringBuilder sbf = new StringBuilder();
-      //  sbf.append("Security Code: ").append(req.sec).append("\r\n");
-      //  sbf.append("Start date: ").append(req.startDate).append("\r\n");
-      //  sbf.append("End date: ").append(req.endDate).append("\r\n");
-      //  sbf.append("Data source: ").append(req.dataSource).append("\r\n");
-      return new ImportMarketDataResponse();
-    }
+  public DownloadFileResponse downloadFile(DownloadFileRequest req) {
+      
+    DownloadFileResponse res = objFactory.createDownloadFileResponse();
 
-    public DownloadFileResponse downloadFile(DownloadFileRequest req) {
-        
-      //TODO: create and set ImportMarketResponse object and return the following as response data
-      // "EventSet Id: " + req.eventSetID;
-      return new DownloadFileResponse();
-    }
+    StringBuilder sbf = new StringBuilder();
+    sbf.append("EventSet Id: ").append(req.eventSetID).append("\r\n");
+    
+    res.setReturn(sbf.toString());
+    
+    return res;
+  }
 }
