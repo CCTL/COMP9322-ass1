@@ -33,28 +33,44 @@
           </xsd:sequence>
         </xsd:complexType>
       </xsd:element>
+	  <xsd:complexType name="serviceFaultType">
+		<xsd:sequence>
+		  <xsd:element name="errcode" type="xsd:string"></xsd:element>
+	  	  <xsd:element name="errtext" type="xsd:string"></xsd:element>
+		</xsd:sequence>
+	  </xsd:complexType>
+      <xsd:element name="importMarketFault" type="tns:serviceFaultType"></xsd:element>
+      <xsd:element name="downloadFileFault" type="tns:serviceFaultType"></xsd:element>
     </xsd:schema>
   </wsdl:types>
   <wsdl:message name="importMarketDataRequestMsg">
     <wsdl:part element="tns:importMarketDataRequest" name="parameters"/>
   </wsdl:message>
-  <wsdl:message name="importMarketDataResposeMsg">
+  <wsdl:message name="importMarketDataResponseMsg">
     <wsdl:part element="tns:importMarketDataResponse" name="parameters"/>
   </wsdl:message>
-   <wsdl:message name="downloadFileRequestMsg">
+  <wsdl:message name="importMarketFaultMsg">
+    <wsdl:part element="tns:importMarketFault" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="downloadFileRequestMsg">
     <wsdl:part element="tns:downloadFileRequest" name="parameters"/>
   </wsdl:message>
   <wsdl:message name="downloadFileResponseMsg">
     <wsdl:part element="tns:downloadFileResponse" name="parameters"/>
   </wsdl:message>
+  <wsdl:message name="downloadFileFaultMsg">
+    <wsdl:part element="tns:downloadFileFault" name="parameters"/>
+  </wsdl:message>
   <wsdl:portType name="TopDownSimpleService">
     <wsdl:operation name="importMarketData">
       <wsdl:input message="tns:importMarketDataRequestMsg"/>
-      <wsdl:output message="tns:importMarketDataResposeMsg"/>
+      <wsdl:output message="tns:importMarketDataResponseMsg"/>
+      <wsdl:fault name="secfault" message="tns:importMarketFaultMsg"></wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="downloadFile">
       <wsdl:input message="tns:downloadFileRequestMsg"/>
       <wsdl:output message="tns:downloadFileResponseMsg"/>
+      <wsdl:fault name="eventfault" message="tns:downloadFileFaultMsg"></wsdl:fault>
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="TopDownSimpleServiceSOAP" type="tns:TopDownSimpleService">
@@ -67,6 +83,9 @@
       <wsdl:output>
         <soap:body use="literal"/>
       </wsdl:output>
+      <wsdl:fault name="secfault">
+      	<soap:fault name="secfault" use="literal"></soap:fault>
+      </wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="downloadFile">
       <soap:operation soapAction="http://topdown.soacourse.unsw.edu.au/downloadFile"/>
@@ -76,6 +95,9 @@
       <wsdl:output>
         <soap:body use="literal"/>
       </wsdl:output>
+      <wsdl:fault name="eventfault">
+      	<soap:fault name="eventfault" use="literal"></soap:fault>
+      </wsdl:fault>
     </wsdl:operation>
   </wsdl:binding>
   <wsdl:service name="TopDownSimpleService">
