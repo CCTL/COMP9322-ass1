@@ -28,9 +28,6 @@ public class TopDownSimpleServiceImpl implements TopDownSimpleService {
   ServletContext sc;
   
   public ImportMarketDataResponse importMarketData(ImportMarketDataRequest req) throws ImportMarketFaultMsg {
-    
-    int a = 0;
-    
     if (req.getSec().length() != 3) {
       
       String msg = "SEC code should be exactly 3 characters long";
@@ -42,7 +39,6 @@ public class TopDownSimpleServiceImpl implements TopDownSimpleService {
       
       throw new ImportMarketFaultMsg(msg,fault);
     }
-    System.out.println("ASDASDASD");
     /* Convert start date to URI format */
     String startDateURI = "&a=" + req.startDate;
     startDateURI = startDateURI.replaceFirst("-", "&b=");
