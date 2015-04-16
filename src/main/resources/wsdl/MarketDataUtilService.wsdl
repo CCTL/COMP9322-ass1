@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://marketdatautil.soacourse.unsw.edu.au" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="MarketDataUtilService" targetNamespace="http://marketdatautil.soacourse.unsw.edu.au">
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://marketdatautil.soacourse.unsw.edu.au">
+      <xsd:element name="summariseMarketDataRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="eventSetId" nillable="false" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="summariseMarketDataResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="eventSetId" nillable="false" type="xsd:string"/>
+            <xsd:element name="sec" nillable="false" type="xsd:string"/>
+            <xsd:element name="startDate" nillable="false" type="xsd:string"/>
+            <xsd:element name="endDate" nillable="false" type="xsd:string"/>
+            <xsd:element name="currencyCode" nillable="false" type="xsd:string"/>
+            <xsd:element name="fileSize" nillable="false" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="currencyConvertMarketDataRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="eventSetId" nillable="false" type="xsd:string"/>
+            <xsd:element name="targetCurrency" nillable="false" type="xsd:string"/>
+            <xsd:element name="targetDate" nillable="false" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="currencyConvertMarketDataResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="eventSetId" nillable="false" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="visualiseMarketDataRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="eventSetId" nillable="false" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="visualiseMarketDataResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="dataURL" nillable="false" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:complexType name="serviceFaultType">
+		<xsd:sequence>
+		  <xsd:element name="errcode" type="xsd:string"></xsd:element>
+	  	  <xsd:element name="errtext" type="xsd:string"></xsd:element>
+		</xsd:sequence>
+	  </xsd:complexType>
+      <xsd:element name="summariseMarketDataFault" type="tns:serviceFaultType"></xsd:element>
+      <xsd:element name="currencyConvertMarketDataFault" type="tns:serviceFaultType"></xsd:element>
+      <xsd:element name="visualiseMarketDataFault" type="tns:serviceFaultType"></xsd:element>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="summariseMarketDataRequestMsg">
+    <wsdl:part element="tns:summariseMarketDataRequest" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="summariseMarketDataResponseMsg">
+    <wsdl:part element="tns:summariseMarketDataResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="summariseMarketDataFaultMsg">
+    <wsdl:part element="tns:summariseMarketDataFault" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="currencyConvertMarketDataRequestMsg">
+    <wsdl:part element="tns:currencyConvertMarketDataRequest" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="currencyConvertMarketDataResponseMsg">
+    <wsdl:part element="tns:currencyConvertMarketDataResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="currencyConvertMarketDataFaultMsg">
+    <wsdl:part element="tns:currencyConvertMarketDataFault" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="visualiseMarketDataRequestMsg">
+    <wsdl:part element="tns:visualiseMarketDataRequest" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="visualiseMarketDataResponseMsg">
+    <wsdl:part element="tns:visualiseMarketDataResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="visualiseMarketDataFaultMsg">
+    <wsdl:part element="tns:visualiseMarketDataFault" name="parameters"/>
+  </wsdl:message>
+  <wsdl:portType name="MarketDataUtilService">
+    <wsdl:operation name="summariseMarketData">
+      <wsdl:input message="tns:summariseMarketDataRequestMsg"/>
+      <wsdl:output message="tns:summariseMarketDataResponseMsg"/>
+      <wsdl:fault name="eventfault" message="tns:summariseMarketDataFaultMsg"></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="currencyConvertMarketData">
+      <wsdl:input message="tns:currencyConvertMarketDataRequestMsg"/>
+      <wsdl:output message="tns:currencyConvertMarketDataResponseMsg"/>
+      <wsdl:fault name="eventfault" message="tns:currencyConvertMarketDataFaultMsg"></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="visualiseMarketData">
+      <wsdl:input message="tns:visualiseMarketDataRequestMsg"/>
+      <wsdl:output message="tns:visualiseMarketDataResponseMsg"/>
+      <wsdl:fault name="eventfault" message="tns:visualiseMarketDataFaultMsg"></wsdl:fault>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="MarketDataUtilServiceSOAP" type="tns:MarketDataUtilService">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="summariseMarketData">
+      <soap:operation soapAction="http://marketdatautil.soacourse.unsw.edu.au/summariseMarketData"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="eventfault">
+      	<soap:fault name="eventfault" use="literal"></soap:fault>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="currencyConvertMarketData">
+      <soap:operation soapAction="http://marketdatautil.soacourse.unsw.edu.au/currencyConvertMarketData"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="eventfault">
+      	<soap:fault name="eventfault" use="literal"></soap:fault>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="visualiseMarketData">
+      <soap:operation soapAction="http://marketdatautil.soacourse.unsw.edu.au/visualiseMarketData"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="eventfault">
+      	<soap:fault name="eventfault" use="literal"></soap:fault>
+      </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="MarketDataUtilService">
+    <wsdl:port binding="tns:MarketDataUtilServiceSOAP" name="MarketDataUtilServiceSOAP">
+      <soap:address location="http://localhost:8080/COMP9322-ass1/MarketDataUtilService"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
