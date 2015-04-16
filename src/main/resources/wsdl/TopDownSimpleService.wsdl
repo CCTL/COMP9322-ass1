@@ -15,21 +15,21 @@
       <xsd:element name="importMarketDataResponse">
         <xsd:complexType>
           <xsd:sequence>
-            <xsd:element name="return" nillable="false" type="xsd:string"/>
+            <xsd:element name="eventSetId" nillable="false" type="xsd:string"/>
           </xsd:sequence>
         </xsd:complexType>
       </xsd:element>
       <xsd:element name="downloadFileRequest">
         <xsd:complexType>
           <xsd:sequence>
-            <xsd:element name="eventSetID" nillable="false" type="xsd:string"/>
+            <xsd:element name="eventSetId" nillable="false" type="xsd:string"/>
           </xsd:sequence>
         </xsd:complexType>
       </xsd:element>
       <xsd:element name="downloadFileResponse">
         <xsd:complexType>
           <xsd:sequence>
-            <xsd:element name="return" nillable="true" type="xsd:string"/>
+            <xsd:element name="dataURL" nillable="true" type="xsd:string"/>
           </xsd:sequence>
         </xsd:complexType>
       </xsd:element>

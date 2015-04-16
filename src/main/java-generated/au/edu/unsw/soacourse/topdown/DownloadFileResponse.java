@@ -18,7 +18,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent&gt;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
  *       &lt;sequence&gt;
- *         &lt;element name="return" type="{http://www.w3.org/2001/XMLSchema}string"/&gt;
+ *         &lt;element name="dataURL" type="{http://www.w3.org/2001/XMLSchema}string"/&gt;
  *       &lt;/sequence&gt;
  *     &lt;/restriction&gt;
  *   &lt;/complexContent&gt;
@@ -29,36 +29,36 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "_return"
+    "dataURL"
 })
 @XmlRootElement(name = "downloadFileResponse")
 public class DownloadFileResponse {
 
-    @XmlElement(name = "return", required = true, nillable = true)
-    protected String _return;
+    @XmlElement(required = true, nillable = true)
+    protected String dataURL;
 
     /**
-     * Gets the value of the return property.
+     * Gets the value of the dataURL property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getReturn() {
-        return _return;
+    public String getDataURL() {
+        return dataURL;
     }
 
     /**
-     * Sets the value of the return property.
+     * Sets the value of the dataURL property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setReturn(String value) {
-        this._return = value;
+    public void setDataURL(String value) {
+        this.dataURL = value;
     }
 
 }

@@ -11,8 +11,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.jws.WebService;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 
 import org.apache.cxf.transport.servlet.ServletController;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.ServletConfigAware;
 import org.springframework.web.context.support.ServletConfigPropertySource;
 
@@ -20,6 +23,9 @@ import org.springframework.web.context.support.ServletConfigPropertySource;
 public class TopDownSimpleServiceImpl implements TopDownSimpleService {
   
   ObjectFactory objFactory = new ObjectFactory();
+  
+  @Autowired
+  ServletContext sc;
   
   public ImportMarketDataResponse importMarketData(ImportMarketDataRequest req) throws ImportMarketFaultMsg {
     
@@ -36,7 +42,7 @@ public class TopDownSimpleServiceImpl implements TopDownSimpleService {
       
       throw new ImportMarketFaultMsg(msg,fault);
     }
-    
+    System.out.println("ASDASDASD");
     /* Convert start date to URI format */
     String startDateURI = "&a=" + req.startDate;
     startDateURI = startDateURI.replaceFirst("-", "&b=");
@@ -48,10 +54,14 @@ public class TopDownSimpleServiceImpl implements TopDownSimpleService {
     endDateURI = endDateURI.replaceFirst("-", "&f=");
     
     /* Event set filename */
-    String fileName = req.getSec() + "-";
-    File tempFile = null;
-    
-    
+    String fileName = req.getSec() + "_" + new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss").format(new Date()).toString();
+    File tempFile = new File(System.getProperty("catalina.home") + File.separator + 
+                             "webapps" + File.separator + 
+                             "ROOT" + File.separator + 
+                             "EventSetDownloads" + File.separator +
+                             fileName + ".csv");
+    tempFile.getParentFile().mkdirs();
+
     try {
       /* Sample format:
        * http://real-chart.finance.yahoo.com/table.csv?s=BHP.AX&a=00&b=29&c=1988&d=03&e=15&f=2015&g=d&ignore=.csv
@@ -66,7 +76,7 @@ public class TopDownSimpleServiceImpl implements TopDownSimpleService {
 
       
       /* Create new event set file */
-      tempFile = File.createTempFile(String.valueOf(fileName),".csv");
+      tempFile.createNewFile();
 
       FileWriter fw = new FileWriter(tempFile.getAbsoluteFile());
       BufferedWriter bw = new BufferedWriter(fw);
@@ -113,13 +123,9 @@ public class TopDownSimpleServiceImpl implements TopDownSimpleService {
       
       throw new ImportMarketFaultMsg(msg,fault);
     }
-    
-    
-    StringBuilder sbf = new StringBuilder();
-    sbf.append("eventSetId: ").append(tempFile.getName()).append("\r\n");
-    
+       
     ImportMarketDataResponse res = objFactory.createImportMarketDataResponse();
-    res.setReturn(sbf.toString());
+    res.setEventSetId(fileName);
    
     return res;
   }
@@ -129,7 +135,11 @@ public class TopDownSimpleServiceImpl implements TopDownSimpleService {
 
     /* Check if event file exists */
     
-    File f = new File(System.getProperty("java.io.tmpdir") + req.getEventSetID() + ".csv");
+    File f = new File(System.getProperty("catalina.home") + File.separator + 
+        "webapps" + File.separator + 
+        "ROOT" + File.separator + 
+        "EventSetDownloads" + File.separator +
+        req.getEventSetId() + ".csv");
    
     if (!f.exists()) { 
       
@@ -142,18 +152,11 @@ public class TopDownSimpleServiceImpl implements TopDownSimpleService {
       
       throw new DownloadFileFaultMsg(msg,fault);
     }
-    
-
-    StringBuilder sbf = new StringBuilder();
-    sbf.append("dataURL: ").append("http://localhost:8080/EventSetDownloads/" + f.getName()).append("\r\n");
-
+      
     DownloadFileResponse res = objFactory.createDownloadFileResponse();
-    res.setReturn(sbf.toString());
-
+    res.setDataURL("http://localhost:8080/EventSetDownloads/" + f.getName());
+    
     return res;
   }
   
-  private static String removeLastChar(String str) {
-    return str.substring(0,str.length()-1);
-  }
 }
