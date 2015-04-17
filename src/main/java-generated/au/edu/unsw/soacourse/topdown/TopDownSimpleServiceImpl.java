@@ -144,7 +144,6 @@ public class TopDownSimpleServiceImpl implements TopDownSimpleService {
       fault.setErrcode(code);
       fault.setErrtext(msg);
       
-      e.printStackTrace();
       throw new ImportMarketFaultMsg(msg,fault);
     }
     
@@ -168,7 +167,7 @@ public class TopDownSimpleServiceImpl implements TopDownSimpleService {
     /* Throw fault if file doesn't exist */ 
     if (!f.exists()) { 
       String msg = "Unknown eventSetId was given";
-      String code = "ERR_EVENT";
+      String code = "EVENT_ERR";
 
       ServiceFaultType fault = objFactory.createServiceFaultType();
       fault.setErrcode(code);

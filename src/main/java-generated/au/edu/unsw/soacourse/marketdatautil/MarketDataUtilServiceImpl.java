@@ -11,9 +11,12 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MarketDataUtilServiceImpl implements MarketDataUtilService {
 
@@ -121,6 +124,7 @@ public class MarketDataUtilServiceImpl implements MarketDataUtilService {
 			throws CurrencyConvertMarketDataFaultMsg {
 		// http://www.xe.com/currencytables/?from=AUD&date=2014-08-20
 		String targetDate = parameters.getTargetDate();
+		Double conversionRate = null;
 		
 		try {
 			// Set up url connection
@@ -132,38 +136,127 @@ public class MarketDataUtilServiceImpl implements MarketDataUtilService {
 			BufferedReader br;
 			br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 			String line = null;
+			
+			/* Pattern matcher */
+		  Pattern pattern = Pattern.compile(parameters.getTargetCurrency() + "</a></td><td>[a-zA-Z\\s]+</td><td class=\"ICTRate\">[0-9\\.]+");
+      
+		  /* TWD</a></td><td>Taiwan New Dollar</td><td class="ICTRate">24.1739937142 */
+		  String matchedStr = "";
+			
 			while ((line = br.readLine()) != null) {
-				// Parse html here.
-				System.out.println(line);
+			  Matcher matcher = pattern.matcher(line);
+			  if(matcher.find()){
+			    matchedStr = matcher.group();
+          break;
+        }
 			}
 			br.close();
-		} catch (MalformedURLException e) {
-			// SOAP FAULTS
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+
+		  pattern = Pattern.compile("[0-9\\.]+");
+		  Matcher matcher = pattern.matcher(matchedStr);
+		  if(matcher.find()){
+		    matchedStr = matcher.group();
+		  }else{
+		    String msg = "Invalid Currency Code";
+	      String code = "CURR_ERR";
+
+	      ServiceFaultType fault = objFactory.createServiceFaultType();
+	      fault.setErrcode(code);
+	      fault.setErrtext(msg);
+
+	      throw new CurrencyConvertMarketDataFaultMsg(msg,fault);
+		  }
+		  
+		  conversionRate = Double.parseDouble(matchedStr);
+			
+		} catch (Exception e) {
+		  String msg = "A generic service fault has occurred";
+      String code= "GEN_ERR";
+      
+      ServiceFaultType fault = objFactory.createServiceFaultType();
+      fault.setErrcode(code);
+      fault.setErrtext(msg);
+      
+      throw new CurrencyConvertMarketDataFaultMsg(msg,fault);
 		}
 		
-	    /* Event set filename */
+	    /* Event set filename */    
+	    File oldFile = new File(System.getProperty("catalina.home") + File.separator + 
+                              "webapps" + File.separator + 
+                              "ROOT" + File.separator + 
+                              "EventSetDownloads" + File.separator +
+                              parameters.getEventSetId() + ".csv");
+	    
 	    String fileName = parameters.getEventSetId().substring(0,3) + "_" + new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss").format(new Date()).toString();
-	    File tempFile = new File(System.getProperty("catalina.home") + File.separator + 
-	                             "webapps" + File.separator + 
-	                             "ROOT" + File.separator + 
-	                             "EventSetDownloads" + File.separator +
-	                             fileName + ".csv");
+	    File newFile = new File(System.getProperty("catalina.home") + File.separator + 
+	                            "webapps" + File.separator + 
+	                            "ROOT" + File.separator + 
+	                            "EventSetDownloads" + File.separator +
+	                            fileName + ".csv");
+	  
 	    
 	    /* Make previous directories if they don't exist */
-	    tempFile.getParentFile().mkdirs();
+	    newFile.getParentFile().mkdirs();
 	    
 	    try {
 		    /* Create new event set file */
-			tempFile.createNewFile();
-			
-			FileWriter fw = new FileWriter(tempFile.getAbsoluteFile());
-			BufferedWriter bw = new BufferedWriter(fw);
-			// Write to new file here with converted columns.
+  			newFile.createNewFile();
+  			
+  			BufferedWriter bw = new BufferedWriter(new FileWriter(newFile.getAbsoluteFile()));
+  			BufferedReader br = new BufferedReader(new FileReader(oldFile.getAbsoluteFile()));
+  			
+  			String strTemp = "";
+        boolean first = true;
+        while (null != (strTemp = br.readLine())) {
+          
+          /* If first line do nothing */
+          if(first){
+            bw.write(strTemp);
+            bw.write("\r\n");
+            first = false;
+            
+          /* Else remove AUD and convert data */
+          }else{
+            if(!strTemp.contains("AUD")){
+              bw.close();
+              br.close();
+              
+              String msg = "The file already contains converted prices";
+              String code= "PRICE_ERR";
+              
+              ServiceFaultType fault = objFactory.createServiceFaultType();
+              fault.setErrcode(code);
+              fault.setErrtext(msg);
+              
+              throw new CurrencyConvertMarketDataFaultMsg(msg,fault);
+            }
+            
+            String[] data = strTemp.split(",");
+            bw.write(data[0]); //sec
+            bw.write("," + data[1]); //date
+            bw.write("," + parameters.getTargetCurrency() + multiplyAndRound(data[2].substring(3),conversionRate)); //open
+            bw.write("," + parameters.getTargetCurrency() + multiplyAndRound(data[3].substring(3),conversionRate)); //high
+            bw.write("," + parameters.getTargetCurrency() + multiplyAndRound(data[4].substring(3),conversionRate)); //low
+            bw.write("," + parameters.getTargetCurrency() + multiplyAndRound(data[5].substring(3),conversionRate)); //close
+            bw.write("," + data[6]); //volume
+            bw.write("," + parameters.getTargetCurrency() + multiplyAndRound(data[7].substring(3),conversionRate)); //adj close
+            bw.write("\r\n");
+          }
+                
+        }
+        
+        bw.close();
+        br.close();
+        
 	    } catch (Exception e) {
-	    	e.printStackTrace();
+	      String msg = "A generic service fault has occurred";
+	      String code= "GEN_ERR";
+	      
+	      ServiceFaultType fault = objFactory.createServiceFaultType();
+	      fault.setErrcode(code);
+	      fault.setErrtext(msg);
+	      
+	      throw new CurrencyConvertMarketDataFaultMsg(msg,fault);
 	    }
 	    
 	    CurrencyConvertMarketDataResponse res = objFactory.createCurrencyConvertMarketDataResponse();
@@ -172,15 +265,19 @@ public class MarketDataUtilServiceImpl implements MarketDataUtilService {
 		return res;
 	}
 
+	public String multiplyAndRound(String str, Double d){
+	  return new DecimalFormat("#.##").format(Double.parseDouble(str)*d);
+	}
+	
 	@Override
 	public SummariseMarketDataResponse summariseMarketData(
 			SummariseMarketDataRequest parameters)
 			throws SummariseMarketDataFaultMsg {
 		String filePath = System.getProperty("catalina.home") + File.separator + 
-				"webapps" + File.separator + 
-                "ROOT" + File.separator + 
-                "EventSetDownloads" + File.separator +
-                parameters.getEventSetId() + ".csv";
+				              "webapps" + File.separator + 
+                      "ROOT" + File.separator + 
+                      "EventSetDownloads" + File.separator +
+                      parameters.getEventSetId() + ".csv";
 		BufferedReader br = null;
 		String line = "";
 		File file = new File(filePath);
@@ -218,14 +315,27 @@ public class MarketDataUtilServiceImpl implements MarketDataUtilService {
 					fault.setErrcode(code);
 					fault.setErrtext(msg);
 					  
-					e.printStackTrace();
 					throw new SummariseMarketDataFaultMsg(msg,fault);
 				}
 			}
 		} catch (FileNotFoundException e) {
-			throw new SummariseMarketDataFaultMsg("EventSetID is invalid");
+		  String msg = "Invalid eventSetId";
+      String code= "EVENT_ERR";
+        
+      ServiceFaultType fault = objFactory.createServiceFaultType();
+      fault.setErrcode(code);
+      fault.setErrtext(msg);
+        
+      throw new SummariseMarketDataFaultMsg(msg,fault);
 		} catch (IOException e) {
-			throw new SummariseMarketDataFaultMsg("Error reading file");
+		  String msg = "Error reading file";
+      String code= "IO_ERR";
+        
+      ServiceFaultType fault = objFactory.createServiceFaultType();
+      fault.setErrcode(code);
+      fault.setErrtext(msg);
+        
+      throw new SummariseMarketDataFaultMsg(msg,fault);
 		} finally {
 			if (br != null) {
 				try {
