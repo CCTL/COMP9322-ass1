@@ -61,8 +61,7 @@ public class MarketDataUtilServiceImpl implements MarketDataUtilService {
 		String line = "";
 		File file = new File(filePath);
 		
-		ObjectFactory factory = new ObjectFactory();
-		SummariseMarketDataResponse response = factory.createSummariseMarketDataResponse();
+		SummariseMarketDataResponse response = objFactory.createSummariseMarketDataResponse();
 		try {
 			br = new BufferedReader(new FileReader(filePath));
 			int currentLine = 0;
