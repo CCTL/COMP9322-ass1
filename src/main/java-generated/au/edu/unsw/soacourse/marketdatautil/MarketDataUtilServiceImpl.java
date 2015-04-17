@@ -56,13 +56,35 @@ public class MarketDataUtilServiceImpl implements MarketDataUtilService {
       BufferedReader br = new BufferedReader(new FileReader(f.getAbsoluteFile()));
       BufferedWriter bw = new BufferedWriter(new FileWriter(visualiseFile.getAbsoluteFile()));   
       
+      /* Write fileanme to html */
       bw.write("<!DOCTYPE html>\r\n");
       bw.write("<body>\r\n");
-      String line = null;    
+      bw.write("<b>EVENT FILE:</b><br>" + visualiseFile.getName() + "<br><br><br>\r\n");
+      
+      bw.write("<table style=\"width:80%\" border=\"1\">");
+      
+      boolean first = true;
+      String line = null;
       while ((line = br.readLine()) != null) {
-        bw.write(line);
-        bw.write("\r\n");
+        bw.write("<tr>\r\n");
+        
+        /* Write column names */
+        if (first) {
+          for (String cell : line.split(",")) {
+            bw.write("<th>" + cell + "</th>");
+          }
+          first = false;
+          
+        /* Write table body */
+        } else {   
+          for (String cell : line.split(",")) {
+            bw.write("<td>" + cell + "</td>");
+          }
+        }
+ 
+        bw.write("</tr>\r\n");
       }
+      
       bw.write("</body>\r\n");
       
       br.close();
