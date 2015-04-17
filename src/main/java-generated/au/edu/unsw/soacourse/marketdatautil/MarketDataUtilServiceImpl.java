@@ -1,12 +1,19 @@
 package au.edu.unsw.soacourse.marketdatautil;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class MarketDataUtilServiceImpl implements MarketDataUtilService {
 
@@ -46,8 +53,57 @@ public class MarketDataUtilServiceImpl implements MarketDataUtilService {
 	public CurrencyConvertMarketDataResponse currencyConvertMarketData(
 			CurrencyConvertMarketDataRequest parameters)
 			throws CurrencyConvertMarketDataFaultMsg {
-		// TODO Auto-generated method stub
-		return null;
+		// http://www.xe.com/currencytables/?from=AUD&date=2014-08-20
+		String targetDate = parameters.getTargetDate();
+		
+		try {
+			// Set up url connection
+			URL url = new URL("http://www.xe.com/currencytables/?from=AUD&date=" + targetDate);
+			URLConnection conn = url.openConnection();
+			conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36");
+			
+			// Read from page.
+			BufferedReader br;
+			br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+			String line = null;
+			while ((line = br.readLine()) != null) {
+				// Parse html here.
+				System.out.println(line);
+			}
+			br.close();
+		} catch (MalformedURLException e) {
+			// SOAP FAULTS
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	    /* Event set filename */
+	    String fileName = parameters.getEventSetId().substring(0,3) + "_" + new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss").format(new Date()).toString();
+	    File tempFile = new File(System.getProperty("catalina.home") + File.separator + 
+	                             "webapps" + File.separator + 
+	                             "ROOT" + File.separator + 
+	                             "EventSetDownloads" + File.separator +
+	                             fileName + ".csv");
+	    
+	    /* Make previous directories if they don't exist */
+	    tempFile.getParentFile().mkdirs();
+	    
+	    try {
+		    /* Create new event set file */
+			tempFile.createNewFile();
+			
+			FileWriter fw = new FileWriter(tempFile.getAbsoluteFile());
+			BufferedWriter bw = new BufferedWriter(fw);
+			// Write to new file here with converted columns.
+	    } catch (Exception e) {
+	    	e.printStackTrace();
+	    }
+	    
+	    CurrencyConvertMarketDataResponse res = objFactory.createCurrencyConvertMarketDataResponse();
+	    res.setEventSetId(fileName);
+	    
+		return res;
 	}
 
 	@Override
