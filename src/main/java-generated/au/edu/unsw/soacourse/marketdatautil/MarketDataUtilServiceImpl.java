@@ -76,7 +76,8 @@ public class MarketDataUtilServiceImpl implements MarketDataUtilService {
 			}
 			if (secInfo != null) {
 				response.setStartDate(secInfo[1]);
-				response.setCurrencyCode(secInfo[0]);
+				response.setSec(secInfo[0]);
+				response.setCurrencyCode(secInfo[2].substring(0, 2));
 				response.setEventSetId(parameters.getEventSetId());
 				response.setFileSize((file.length() / 1024) + "K");
 			}
