@@ -248,6 +248,8 @@ public class MarketDataUtilServiceImpl implements MarketDataUtilService {
         bw.close();
         br.close();
         
+	    } catch (CurrencyConvertMarketDataFaultMsg e){
+	      throw e;
 	    } catch (Exception e) {
 	      String msg = "A generic service fault has occurred";
 	      String code= "GEN_ERR";
@@ -257,7 +259,7 @@ public class MarketDataUtilServiceImpl implements MarketDataUtilService {
 	      fault.setErrtext(msg);
 	      
 	      throw new CurrencyConvertMarketDataFaultMsg(msg,fault);
-	    }
+	    } 
 	    
 	    CurrencyConvertMarketDataResponse res = objFactory.createCurrencyConvertMarketDataResponse();
 	    res.setEventSetId(fileName);
