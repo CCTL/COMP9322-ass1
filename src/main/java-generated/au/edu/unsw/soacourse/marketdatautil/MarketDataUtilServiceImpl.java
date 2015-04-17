@@ -8,12 +8,36 @@ import java.io.IOException;
 
 public class MarketDataUtilServiceImpl implements MarketDataUtilService {
 
+  ObjectFactory objFactory = new ObjectFactory();
+  
 	@Override
 	public VisualiseMarketDataResponse visualiseMarketData(
 			VisualiseMarketDataRequest parameters)
 			throws VisualiseMarketDataFaultMsg {
-		// TODO Auto-generated method stub
-		return null;
+	   /* Check if event file exists */   
+    File f = new File(System.getProperty("catalina.home") + File.separator + 
+                      "webapps" + File.separator + 
+                      "ROOT" + File.separator + 
+                      "EventSetDownloads" + File.separator +
+                      parameters.getEventSetId() + ".csv");
+    
+    /* Throw fault if file doesn't exist */ 
+    if (!f.exists()) { 
+      String msg = "Unknown eventSetId was given";
+      String code = "ERR_EVENT";
+
+      ServiceFaultType fault = objFactory.createServiceFaultType();
+      fault.setErrcode(code);
+      fault.setErrtext(msg);
+      
+      throw new VisualiseMarketDataFaultMsg(msg,fault);
+    }
+    
+    /* Create response */
+    VisualiseMarketDataResponse res = objFactory.createVisualiseMarketDataResponse();
+    res.setDataURL("http://localhost:8080/EventSetDownloads/" + f.getName());
+    
+    return res;
 	}
 
 	@Override
