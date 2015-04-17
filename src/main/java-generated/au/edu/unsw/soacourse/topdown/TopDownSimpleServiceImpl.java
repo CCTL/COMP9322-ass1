@@ -101,8 +101,7 @@ public class TopDownSimpleServiceImpl implements TopDownSimpleService {
       /* Create new event set file */
       tempFile.createNewFile();
 
-      FileWriter fw = new FileWriter(tempFile.getAbsoluteFile());
-      BufferedWriter bw = new BufferedWriter(fw);
+      BufferedWriter bw = new BufferedWriter(new FileWriter(tempFile.getAbsoluteFile()));
       
       /* Open stream to yahoo and write to file */
       URL url = new URL(urlStr);

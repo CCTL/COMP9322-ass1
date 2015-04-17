@@ -52,9 +52,21 @@ public class MarketDataUtilServiceImpl implements MarketDataUtilService {
     try {
       visualiseFile.createNewFile();   
       
-      /* Generate html */
-      FileWriter fw = new FileWriter(visualiseFile.getAbsoluteFile());
-      BufferedWriter bw = new BufferedWriter(fw);
+      /* Generate html (read from csv, write to html) */
+      BufferedReader br = new BufferedReader(new FileReader(f.getAbsoluteFile()));
+      BufferedWriter bw = new BufferedWriter(new FileWriter(visualiseFile.getAbsoluteFile()));   
+      
+      bw.write("<!DOCTYPE html>\r\n");
+      bw.write("<body>\r\n");
+      String line = null;    
+      while ((line = br.readLine()) != null) {
+        bw.write(line);
+        bw.write("\r\n");
+      }
+      bw.write("</body>\r\n");
+      
+      br.close();
+      bw.close();
     
     /* Throw fault if file can't be created/written to */
     } catch (IOException e) {           
