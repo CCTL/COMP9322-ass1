@@ -92,7 +92,7 @@ public class MarketDataUtilServiceImpl implements MarketDataUtilService {
 					String msg = "Invalid date format";
 					String code= "DATE_ERR";
 					  
-					ServiceFaultType fault = factory.createServiceFaultType();
+					ServiceFaultType fault = objFactory.createServiceFaultType();
 					fault.setErrcode(code);
 					fault.setErrtext(msg);
 					  
