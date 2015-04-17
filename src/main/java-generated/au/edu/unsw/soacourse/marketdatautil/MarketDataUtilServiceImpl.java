@@ -1,9 +1,11 @@
 package au.edu.unsw.soacourse.marketdatautil;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 
 public class MarketDataUtilServiceImpl implements MarketDataUtilService {
@@ -33,9 +35,41 @@ public class MarketDataUtilServiceImpl implements MarketDataUtilService {
       throw new VisualiseMarketDataFaultMsg(msg,fault);
     }
     
+    
+    /* Visualisation filename */
+    File visualiseFile = new File(System.getProperty("catalina.home") + File.separator + 
+                                  "webapps" + File.separator + 
+                                  "ROOT" + File.separator + 
+                                  "EventSetDownloads" + File.separator +
+                                  parameters.getEventSetId() + ".html");
+    
+    /* Make previous directories if they don't exist */
+    visualiseFile.getParentFile().mkdirs();
+    
+    /* Try to create new file */
+    try {
+      visualiseFile.createNewFile();   
+      
+      /* Generate html */
+      FileWriter fw = new FileWriter(visualiseFile.getAbsoluteFile());
+      BufferedWriter bw = new BufferedWriter(fw);
+    
+    /* Throw fault if file can't be created/written to */
+    } catch (IOException e) {           
+      String msg = "Cannot create/edit generated html file";
+      String code = "IO_ERR";
+
+      ServiceFaultType fault = objFactory.createServiceFaultType();
+      fault.setErrcode(code);
+      fault.setErrtext(msg);
+      
+      e.printStackTrace();
+      throw new VisualiseMarketDataFaultMsg(msg,fault);
+    }
+    
     /* Create response */
     VisualiseMarketDataResponse res = objFactory.createVisualiseMarketDataResponse();
-    res.setDataURL("http://localhost:8080/EventSetDownloads/" + f.getName());
+    res.setDataURL("http://localhost:8080/EventSetDownloads/" + visualiseFile.getName());
     
     return res;
 	}
