@@ -9,4 +9,6 @@
 	<import resource="classpath:META-INF/cxf/cxf.xml" />
 	
 	<jaxws:endpoint id="TopdownOne" implementor="au.edu.unsw.soacourse.topdown.TopDownSimpleServiceImpl" address="/TopDownSimpleService"/>
+	<jaxws:endpoint id="MarketDataUtil" implementor="au.edu.unsw.soacourse.marketdatautil.MarketDataUtilServiceImpl" address="/MarketDataUtilService"/>
+	
 </beans>
