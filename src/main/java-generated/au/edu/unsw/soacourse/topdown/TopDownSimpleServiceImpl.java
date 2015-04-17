@@ -5,33 +5,24 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.URL;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.jws.WebService;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-
-import org.apache.cxf.transport.servlet.ServletController;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.context.ServletConfigAware;
-import org.springframework.web.context.support.ServletConfigPropertySource;
 
 @WebService(endpointInterface = "au.edu.unsw.soacourse.topdown.TopDownSimpleService")
 public class TopDownSimpleServiceImpl implements TopDownSimpleService {
   
   ObjectFactory objFactory = new ObjectFactory();
   
-  @Autowired
-  ServletContext sc;
-  
   public ImportMarketDataResponse importMarketData(ImportMarketDataRequest req) throws ImportMarketFaultMsg {
-    if (req.getSec().length() != 3) {
-      
-      String msg = "SEC code should be exactly 3 characters long";
-      String code= "ERR_SEC";
+    
+    /* Throw fault if not exactly 3 alphabetic chars */
+    if (!req.getSec().matches("[a-zA-Z]{3}")) {
+      String msg = "SEC code should be exactly 3 alphabetic characters long";
+      String code= "SEC_ERR";
       
       ServiceFaultType fault = objFactory.createServiceFaultType();
       fault.setErrcode(code);
@@ -39,6 +30,40 @@ public class TopDownSimpleServiceImpl implements TopDownSimpleService {
       
       throw new ImportMarketFaultMsg(msg,fault);
     }
+    
+    Date parsedStartDate = null;
+    Date parsedEndDate = null;
+    
+    /* Parse start and end dates */
+    try {
+      parsedStartDate = new SimpleDateFormat("dd-MM-yyyy").parse(req.startDate);
+      parsedEndDate = new SimpleDateFormat("dd-MM-yyyy").parse(req.endDate);
+    
+    /* Throw fault if invalid date format */
+    } catch (ParseException e) {
+      String msg = "Invalid date format";
+      String code= "DATE_ERR";
+      
+      ServiceFaultType fault = objFactory.createServiceFaultType();
+      fault.setErrcode(code);
+      fault.setErrtext(msg);
+      
+      e.printStackTrace();
+      throw new ImportMarketFaultMsg(msg,fault);
+    }
+    
+    /* Throw fault if end date < start date format */
+    if (parsedEndDate.before(parsedStartDate)) {
+      String msg = "End date is before start date";
+      String code= "DATE_ERR";
+      
+      ServiceFaultType fault = objFactory.createServiceFaultType();
+      fault.setErrcode(code);
+      fault.setErrtext(msg);
+      
+      throw new ImportMarketFaultMsg(msg,fault);
+    }
+    
     /* Convert start date to URI format */
     String startDateURI = "&a=" + req.startDate;
     startDateURI = startDateURI.replaceFirst("-", "&b=");
@@ -56,6 +81,8 @@ public class TopDownSimpleServiceImpl implements TopDownSimpleService {
                              "ROOT" + File.separator + 
                              "EventSetDownloads" + File.separator +
                              fileName + ".csv");
+    
+    /* Make previous directories if they don't exist */
     tempFile.getParentFile().mkdirs();
 
     try {
@@ -63,7 +90,7 @@ public class TopDownSimpleServiceImpl implements TopDownSimpleService {
        * http://real-chart.finance.yahoo.com/table.csv?s=BHP.AX&a=00&b=29&c=1988&d=03&e=15&f=2015&g=d&ignore=.csv
        * */
       
-      /* Create URI str */
+      /* Generate URI str */
       String urlStr = "http://real-chart.finance.yahoo.com/table.csv";
       urlStr += "?s=" + req.sec;
       urlStr += startDateURI;
@@ -84,13 +111,15 @@ public class TopDownSimpleServiceImpl implements TopDownSimpleService {
       String strTemp = "";
       boolean first = true;
       while (null != (strTemp = br.readLine())) {
+        
+        /* If first line append "Sec" column name */
         if(first){
           bw.write("Sec," + strTemp);
           bw.write("\r\n");
           first = false;
-        }else{
           
-          /* TODO check assignment page for fault handling */
+        /* Else append Sec data + prepend AUD to relevant columns */
+        }else{
           String[] data = strTemp.split(",");
           bw.write(req.sec); //sec
           bw.write("," + data[0]); //date
@@ -102,24 +131,25 @@ public class TopDownSimpleServiceImpl implements TopDownSimpleService {
           bw.write(",AUD" + data[6]); //adj close
           bw.write("\r\n");
         }
-        
-        
+              
       }
       
       bw.close();
       
-    } catch (Exception ex) {
-      String msg = "Generic Fault";
-      String code= "genericFault";
+    /* Catch general exceptions */
+    } catch (Exception e) {
+      String msg = "A generic service fault has occurred";
+      String code= "GEN_ERR";
       
       ServiceFaultType fault = objFactory.createServiceFaultType();
       fault.setErrcode(code);
-      ex.printStackTrace();
-      fault.setErrtext(ex.getMessage());
+      fault.setErrtext(msg);
       
+      e.printStackTrace();
       throw new ImportMarketFaultMsg(msg,fault);
     }
-       
+    
+    /* Create response */
     ImportMarketDataResponse res = objFactory.createImportMarketDataResponse();
     res.setEventSetId(fileName);
    
@@ -129,16 +159,15 @@ public class TopDownSimpleServiceImpl implements TopDownSimpleService {
 
   public DownloadFileResponse downloadFile(DownloadFileRequest req) throws DownloadFileFaultMsg {
 
-    /* Check if event file exists */
-    
+    /* Check if event file exists */   
     File f = new File(System.getProperty("catalina.home") + File.separator + 
-        "webapps" + File.separator + 
-        "ROOT" + File.separator + 
-        "EventSetDownloads" + File.separator +
-        req.getEventSetId() + ".csv");
-   
+                      "webapps" + File.separator + 
+                      "ROOT" + File.separator + 
+                      "EventSetDownloads" + File.separator +
+                      req.getEventSetId() + ".csv");
+    
+    /* Throw fault if file doesn't exist */ 
     if (!f.exists()) { 
-      
       String msg = "Unknown eventSetId was given";
       String code = "ERR_EVENT";
 
@@ -148,7 +177,8 @@ public class TopDownSimpleServiceImpl implements TopDownSimpleService {
       
       throw new DownloadFileFaultMsg(msg,fault);
     }
-      
+    
+    /* Create response */
     DownloadFileResponse res = objFactory.createDownloadFileResponse();
     res.setDataURL("http://localhost:8080/EventSetDownloads/" + f.getName());
     
