@@ -42,9 +42,75 @@ public class MarketDataUtilServiceImpl implements MarketDataUtilService {
       throw new VisualiseMarketDataFaultMsg(msg,fault);
     }
     
+    
+    /* Visualisation filename */
+    File visualiseFile = new File(System.getProperty("catalina.home") + File.separator + 
+                                  "webapps" + File.separator + 
+                                  "ROOT" + File.separator + 
+                                  "EventSetDownloads" + File.separator +
+                                  parameters.getEventSetId() + ".html");
+    
+    /* Make previous directories if they don't exist */
+    visualiseFile.getParentFile().mkdirs();
+    
+    /* Try to create new file */
+    try {
+      visualiseFile.createNewFile();   
+      
+      /* Generate html (read from csv, write to html) */
+      BufferedReader br = new BufferedReader(new FileReader(f.getAbsoluteFile()));
+      BufferedWriter bw = new BufferedWriter(new FileWriter(visualiseFile.getAbsoluteFile()));   
+      
+      /* Write fileanme to html */
+      bw.write("<!DOCTYPE html>\r\n");
+      bw.write("<body>\r\n");
+      bw.write("<b>EVENT FILE:</b><br>" + visualiseFile.getName() + "<br><br><br>\r\n");
+      
+      bw.write("<table style=\"width:80%\" border=\"1\">");
+      
+      boolean first = true;
+      String line = null;
+      while ((line = br.readLine()) != null) {
+        bw.write("<tr>\r\n");
+        
+        /* Write column names */
+        if (first) {
+          for (String cell : line.split(",")) {
+            bw.write("<th>" + cell + "</th>");
+          }
+          first = false;
+          
+        /* Write table body */
+        } else {   
+          for (String cell : line.split(",")) {
+            bw.write("<td>" + cell + "</td>");
+          }
+        }
+ 
+        bw.write("</tr>\r\n");
+      }
+      
+      bw.write("</body>\r\n");
+      
+      br.close();
+      bw.close();
+    
+    /* Throw fault if file can't be created/written to */
+    } catch (IOException e) {           
+      String msg = "Cannot create/edit generated html file";
+      String code = "IO_ERR";
+
+      ServiceFaultType fault = objFactory.createServiceFaultType();
+      fault.setErrcode(code);
+      fault.setErrtext(msg);
+      
+      e.printStackTrace();
+      throw new VisualiseMarketDataFaultMsg(msg,fault);
+    }
+    
     /* Create response */
     VisualiseMarketDataResponse res = objFactory.createVisualiseMarketDataResponse();
-    res.setDataURL("http://localhost:8080/EventSetDownloads/" + f.getName());
+    res.setDataURL("http://localhost:8080/EventSetDownloads/" + visualiseFile.getName());
     
     return res;
 	}
