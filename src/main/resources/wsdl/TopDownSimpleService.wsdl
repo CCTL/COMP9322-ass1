@@ -102,7 +102,7 @@
   </wsdl:binding>
   <wsdl:service name="TopDownSimpleService">
     <wsdl:port binding="tns:TopDownSimpleServiceSOAP" name="TopDownSimpleServiceSOAP">
-      <soap:address location="http://localhost:8080/SimpleServices/TopDownSimpleService"/>
+      <soap:address location="http://localhost:8080/COMP9322-ass1/TopDownSimpleService"/>
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>
